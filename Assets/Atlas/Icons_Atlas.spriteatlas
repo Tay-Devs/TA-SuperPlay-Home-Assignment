@@ -78,6 +78,7 @@ SpriteAtlas:
     - {fileID: 2800000, guid: 3814034ab2f5c5b40a6644f07451b6a5, type: 3}
     - {fileID: 2800000, guid: cb9b0ef585b54b546a0bd90afbaf93c8, type: 3}
     - {fileID: 2800000, guid: d2d6952e7dddb3342a2bdc7a3c2987d7, type: 3}
+    - {fileID: 2800000, guid: b694671d318d91444b115bdcd337690e, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -112,6 +113,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 88601e2c336830d4da551a660a1bb804, type: 3}
   - {fileID: 21300000, guid: 539d2f4c1ce5ef643bba052565d553ae, type: 3}
   - {fileID: 21300000, guid: 8ec9e9cc06993174dbabe4760b770bfe, type: 3}
+  - {fileID: 21300000, guid: b694671d318d91444b115bdcd337690e, type: 3}
   - {fileID: 21300000, guid: d2d6952e7dddb3342a2bdc7a3c2987d7, type: 3}
   - {fileID: 21300000, guid: 3252fe1f93986d6438c1cb1b36fae719, type: 3}
   - {fileID: 21300000, guid: 0fdb322f4b11d854086624589b9b8256, type: 3}
@@ -136,7 +138,7 @@ SpriteAtlas:
   - Tile_Gold_Corner_Top
   - Honey
   - Coins
-  - Triton
+  - Trident
   - Tile_Gold_Corner_Bot
   - Progress_Bar_1
   - Checkmark
@@ -144,9 +146,10 @@ SpriteAtlas:
   - Heart
   - Disco_Ball_Purple
   - Bug
-  - Tile_Blue_Corner_Bottom
+  - Tile_Blue_Corner_Bot
   - Disco_Ball_Yellow
   - Tile_Blue_Corner_Top
+  - Player_Currency
   - Progress_Bar_3
   - Tile_Purple_Mid
   - Info_Button
