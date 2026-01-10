@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -8,11 +9,14 @@ public class BoardTileView : MonoBehaviour
     [Header("References")]
     [SerializeField] private Image blackOverlay;
     [SerializeField] private Animator animator;
+    [SerializeField] private DOTweenAnimation revealAnimation;
     
     [Header("Animation")]
     [SerializeField] private string winTriggerName = "Win";
     
     [Header("Events")]
+    public UnityEvent OnRevealStarted;
+    public UnityEvent OnRevealCompleted;
     public UnityEvent OnBlinkStarted;
     public UnityEvent OnBlinkCompleted;
     public UnityEvent OnWinTriggered;
@@ -34,11 +38,53 @@ public class BoardTileView : MonoBehaviour
         
         winTriggerHash = Animator.StringToHash(winTriggerName);
         
-        // Auto-find animator if not assigned
         if (animator == null)
         {
             animator = GetComponent<Animator>();
         }
+        
+        if (revealAnimation == null)
+        {
+            revealAnimation = GetComponent<DOTweenAnimation>();
+        }
+    }
+    
+    // Triggers the reveal DOTweenAnimation on this tile
+    // Called by BoardData during entrance sequence in random order
+    public void TriggerReveal()
+    {
+        if (revealAnimation == null)
+        {
+            if (enableDebugLogs)
+            {
+                Debug.Log($"[BoardTileView] {gameObject.name} has no reveal animation assigned");
+            }
+        
+            OnRevealStarted?.Invoke();
+            OnRevealCompleted?.Invoke();
+            return;
+        }
+    
+        // Ensure animation is ready and play from start
+        revealAnimation.DORewind();
+        revealAnimation.DOPlay();
+    
+        OnRevealStarted?.Invoke();
+    
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardTileView] {gameObject.name} reveal triggered");
+        }
+    }
+    // Gets the duration of the reveal animation
+    // Used by BoardData to know when reveal is complete
+    public float GetRevealDuration()
+    {
+        if (revealAnimation != null)
+        {
+            return revealAnimation.duration;
+        }
+        return 0f;
     }
     
     // Performs a complete blink cycle: fade in -> hold -> fade out

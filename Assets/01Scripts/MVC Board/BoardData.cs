@@ -1,0 +1,337 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Playables;
+using DG.Tweening;
+using UnityEngine.Events;
+using Random = UnityEngine.Random;
+
+public class BoardData : MonoBehaviour
+{
+    [Header("Board Tiles")]
+    [SerializeField] private List<BoardTileView> tiles = new List<BoardTileView>();
+    
+    [Header("Rigged Outcome")]
+    [SerializeField] private int riggedWinnerIndex;
+    
+    [Header("Upgrade")]
+    [SerializeField] private PlayableDirector upgradeTimeline;
+    
+    [Header("Entrance Effect - Reveal")]
+    [Tooltip("Delay between each tile reveal")]
+    [SerializeField] private float delayBetweenReveals = 0.1f;
+    
+    [Header("Entrance Effect - Celebration Blink")]
+    [Tooltip("How long the celebration blinking lasts after all tiles revealed")]
+    [SerializeField] private float celebrationBlinkDuration = 2f;
+
+    [Tooltip("Minimum interval between blink bursts")]
+    [SerializeField] private float celebrationMinInterval = 0.05f;
+
+    [Tooltip("Maximum interval between blink bursts")]
+    [SerializeField] private float celebrationMaxInterval = 0.15f;
+
+    [Tooltip("Minimum tiles to blink at once")]
+    [SerializeField] private int minSimultaneousBlinks = 2;
+
+    [Tooltip("Maximum tiles to blink at once")]
+    [SerializeField] private int maxSimultaneousBlinks = 4;
+
+    [Header("Celebration Blink Settings")]
+    [SerializeField] private float celebrationFadeInDuration = 0.03f;
+    [SerializeField] private float celebrationHoldDuration = 0.05f;
+    [SerializeField] private float celebrationFadeOutDuration = 0.08f;
+    private Ease celebrationFadeInEase = Ease.OutQuad;
+    private Ease celebrationFadeOutEase = Ease.InQuad;
+     
+     [SerializeField] private UnityEvent onCelebrationFinished;
+    
+    [Header("Debug")]
+    [SerializeField] private bool enableDebugLogs = false;
+    
+    // Events
+    public event Action OnEntranceStarted;
+    public event Action OnAllTilesRevealed;
+    public event Action OnCelebrationStarted;
+    public event Action OnEntranceCompleted;
+    
+    private Coroutine entranceCoroutine;
+    private bool isEntranceRunning;
+    
+    public IReadOnlyList<BoardTileView> Tiles => tiles;
+    public int RiggedWinnerIndex => riggedWinnerIndex;
+    public PlayableDirector UpgradeTimeline => upgradeTimeline;
+    public bool HasUpgrade => upgradeTimeline != null;
+    public bool IsEntranceRunning => isEntranceRunning;
+    
+    private void OnEnable()
+    {
+        StartEntranceEffect();
+    }
+    
+    private void OnDisable()
+    {
+        StopEntranceEffect();
+    }
+    
+    // Starts the entrance effect sequence
+    // Called automatically on enable, reveals tiles then celebrates
+    public void StartEntranceEffect()
+    {
+        if (isEntranceRunning) return;
+        
+        entranceCoroutine = StartCoroutine(EntranceEffectRoutine());
+    }
+    
+    // Stops the entrance effect if running
+    // Resets all tiles to original state
+    public void StopEntranceEffect()
+    {
+        if (entranceCoroutine != null)
+        {
+            StopCoroutine(entranceCoroutine);
+            entranceCoroutine = null;
+        }
+        
+        isEntranceRunning = false;
+        ResetAllTiles();
+    }
+    
+    // Main entrance coroutine: reveal tiles in random order, then celebrate
+    // Shuffles tile order, reveals with delay, then runs celebration blinks
+    private IEnumerator EntranceEffectRoutine()
+    {
+        isEntranceRunning = true;
+    
+        yield return null;
+    
+        OnEntranceStarted?.Invoke();
+    
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] {gameObject.name} entrance effect started with {tiles.Count} tiles");
+        }
+    
+        List<int> revealOrder = CreateRandomOrder(tiles.Count);
+        float longestRevealDuration = 0f;
+    
+        for (int i = 0; i < revealOrder.Count; i++)
+        {
+            int index = revealOrder[i];
+            BoardTileView tile = tiles[index];
+        
+            if (tile == null)
+            {
+                if (enableDebugLogs)
+                {
+                    Debug.Log($"[BoardData] Tile at index {index} is null, skipping");
+                }
+                continue;
+            }
+        
+            float duration = tile.GetRevealDuration();
+            if (duration > longestRevealDuration)
+            {
+                longestRevealDuration = duration;
+            }
+        
+            tile.TriggerReveal();
+        
+            if (enableDebugLogs)
+            {
+                Debug.Log($"[BoardData] Revealing tile {i + 1}/{revealOrder.Count} (index {index}): {tile.gameObject.name}");
+            }
+        
+            yield return new WaitForSeconds(delayBetweenReveals);
+        }
+    
+        yield return new WaitForSeconds(longestRevealDuration);
+    
+        OnAllTilesRevealed?.Invoke();
+    
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] All {tiles.Count} tiles revealed, starting celebration");
+        }
+    
+        yield return StartCoroutine(CelebrationBlinkRoutine());
+    
+        isEntranceRunning = false;
+    
+        OnEntranceCompleted?.Invoke();
+    
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] {gameObject.name} entrance effect completed");
+        }
+    }
+    
+    // Celebration blink coroutine: randomly blinks tiles for set duration
+    // Picks random tiles at random intervals, allows overlapping blinks
+    private IEnumerator CelebrationBlinkRoutine()
+    {
+        OnCelebrationStarted?.Invoke();
+    
+        float elapsedTime = 0f;
+        HashSet<int> lastBlinkedIndices = new HashSet<int>();
+    
+        while (elapsedTime < celebrationBlinkDuration)
+        {
+            int blinkCount = Random.Range(minSimultaneousBlinks, maxSimultaneousBlinks + 1);
+            blinkCount = Mathf.Min(blinkCount, tiles.Count);
+        
+            List<int> indicesToBlink = GetRandomIndices(blinkCount, lastBlinkedIndices);
+        
+            lastBlinkedIndices.Clear();
+            foreach (int index in indicesToBlink)
+            {
+                tiles[index].Blink(
+                    celebrationFadeInDuration,
+                    celebrationHoldDuration,
+                    celebrationFadeOutDuration,
+                    celebrationFadeInEase,
+                    celebrationFadeOutEase
+                );
+                lastBlinkedIndices.Add(index);
+            
+                if (enableDebugLogs)
+                {
+                    Debug.Log($"[BoardData] Celebration blink on tile {index}");
+                }
+            }
+        
+            float interval = Random.Range(celebrationMinInterval, celebrationMaxInterval);
+            yield return new WaitForSeconds(interval);
+            elapsedTime += interval;
+        }
+    
+        float totalBlinkDuration = celebrationFadeInDuration + celebrationHoldDuration + celebrationFadeOutDuration;
+        yield return new WaitForSeconds(totalBlinkDuration);
+    
+        ResetAllTiles();
+        onCelebrationFinished?.Invoke();
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] Celebration blink completed");
+        }
+    }
+    private List<int> GetRandomIndices(int count, HashSet<int> excludeIndices)
+    {
+        List<int> result = new List<int>(count);
+        List<int> availableIndices = new List<int>();
+    
+        // Build list of available indices (prefer ones not in exclude set)
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            if (!excludeIndices.Contains(i))
+            {
+                availableIndices.Add(i);
+            }
+        }
+    
+        // If not enough available, add back excluded ones
+        if (availableIndices.Count < count)
+        {
+            availableIndices.Clear();
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                availableIndices.Add(i);
+            }
+        }
+    
+        // Pick random unique indices
+        for (int i = 0; i < count && availableIndices.Count > 0; i++)
+        {
+            int randomIndex = Random.Range(0, availableIndices.Count);
+            result.Add(availableIndices[randomIndex]);
+            availableIndices.RemoveAt(randomIndex);
+        }
+    
+        return result;
+    }
+    // Creates a list of indices 0 to count-1 in random order
+    // Uses Fisher-Yates shuffle for unbiased randomization
+    private List<int> CreateRandomOrder(int count)
+    {
+        List<int> order = new List<int>(count);
+        
+        for (int i = 0; i < count; i++)
+        {
+            order.Add(i);
+        }
+        
+        // Fisher-Yates shuffle
+        for (int i = count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            (order[i], order[randomIndex]) = (order[randomIndex], order[i]);
+        }
+        
+        return order;
+    }
+    
+    // Gets random tile index avoiding the last picked one
+    // Prevents same tile blinking twice in a row
+    private int GetRandomIndex(int excludeIndex)
+    {
+        if (tiles.Count <= 1) return 0;
+        
+        int randomIndex;
+        do
+        {
+            randomIndex = Random.Range(0, tiles.Count);
+        } while (randomIndex == excludeIndex);
+        
+        return randomIndex;
+    }
+    
+    // Resets all tiles' black overlay to original state
+    // Called after celebration ends
+    private void ResetAllTiles()
+    {
+        foreach (var tile in tiles)
+        {
+            tile.ResetToOriginal();
+        }
+    }
+    
+    // Validates that rigged index is within bounds
+    // Called by BoardManager before starting sequence
+    public bool IsValid()
+    {
+        bool valid = tiles != null && tiles.Count > 0 && riggedWinnerIndex >= 0 && riggedWinnerIndex < tiles.Count;
+        
+        if (!valid && enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] {gameObject.name} validation failed - Tiles: {tiles?.Count ?? 0}, RiggedIndex: {riggedWinnerIndex}");
+        }
+        
+        return valid;
+    }
+    
+    // Gets the winning tile directly for convenience
+    // Returns null if index is out of bounds
+    public BoardTileView GetWinningTile()
+    {
+        if (riggedWinnerIndex >= 0 && riggedWinnerIndex < tiles.Count)
+        {
+            return tiles[riggedWinnerIndex];
+        }
+        return null;
+    }
+    
+    // Auto-populates tiles list from children with BoardTileView component
+    // Useful for quick setup - call from context menu
+    [ContextMenu("Auto Find Tiles In Children")]
+    private void AutoFindTiles()
+    {
+        tiles.Clear();
+        tiles.AddRange(GetComponentsInChildren<BoardTileView>(true));
+        
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] Found {tiles.Count} tiles in children");
+        }
+    }
+}

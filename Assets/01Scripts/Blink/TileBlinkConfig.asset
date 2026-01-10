@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 541b8e476c4057442ab3f7687a7fff05, type: 3}
   m_Name: TileBlinkConfig
   m_EditorClassIdentifier: 
-  totalDuration: 2.7
+  totalDuration: 2.5
   startInterval: 0.1
-  endInterval: 0.5
-  finalRevealDelay: 0.3
+  endInterval: 0.4
+  finalRevealDelay: 0.1
   fadeInDuration: 0.2
   fadeOutDuration: 0.15
   holdDuration: 0.05
   fadeInEase: 6
   fadeOutEase: 5
-  easingPower: 1.99
+  easingPower: 2

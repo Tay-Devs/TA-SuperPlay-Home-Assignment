@@ -10,6 +10,9 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private List<BoardData> boards = new List<BoardData>();
     [SerializeField] private TileBlinkController blinkController;
     
+    [Header("Animation")]
+    
+    [SerializeField] private AnimationClip animationDelay;
     [Header("State")]
     [SerializeField] private int currentBoardIndex = 0;
     
@@ -27,7 +30,7 @@ public class BoardManager : MonoBehaviour
     public BoardData CurrentBoard => GetBoardAt(currentBoardIndex);
     public bool IsLastBoard => currentBoardIndex >= boards.Count - 1;
     public bool IsSequenceRunning => blinkController != null && blinkController.IsRunning;
-    
+
     private void OnEnable()
     {
         if (blinkController != null)
@@ -101,12 +104,13 @@ public class BoardManager : MonoBehaviour
             Debug.Log("[BoardManager] Sequence completed, initiating upgrade");
         }
 
-        StartCoroutine(DelayedNextLevel());
+        //Adding delay to start the timeline animation according to the winning animation
+        StartCoroutine(DelayedNextLevel(animationDelay.length));
     }
 
-    private IEnumerator DelayedNextLevel()
+    private IEnumerator DelayedNextLevel(float delay)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(delay + 0.2f);
         UpgradeToNextLevel();
     }
     // Upgrades to the next board level by playing the upgrade timeline
