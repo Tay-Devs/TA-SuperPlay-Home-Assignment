@@ -74,7 +74,8 @@ public class BoardManager : MonoBehaviour
         {
             Debug.Log($"[BoardManager] Starting reward sequence on board {currentBoardIndex}, rigged index: {board.RiggedWinnerIndex}");
         }
-        
+
+
         blinkController.StartBlinkSequence(board.Tiles, board.RiggedWinnerIndex);
     }
     
@@ -163,8 +164,6 @@ public class BoardManager : MonoBehaviour
     {
         director.stopped -= OnTimelineStopped;
         
-        currentBoardIndex++;
-        
         if (enableDebugLogs)
         {
             Debug.Log($"[BoardManager] Upgraded to board {currentBoardIndex}");
@@ -200,18 +199,16 @@ public class BoardManager : MonoBehaviour
     
     // Forces a specific board index for save/load or debugging
     // Open for future extensibility
-    public void SetBoardIndex(int index)
+    public void IncreaseBoardIndex()
     {
-        if (index >= 0 && index < boards.Count)
-        {
-            currentBoardIndex = index;
-            OnBoardChanged?.Invoke(currentBoardIndex);
+        currentBoardIndex++;
+        OnBoardChanged?.Invoke(currentBoardIndex);
             
-            if (enableDebugLogs)
-            {
-                Debug.Log($"[BoardManager] Board index set to {currentBoardIndex}");
-            }
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardManager] Board index set to {currentBoardIndex}");
         }
+        
     }
     
     // Auto-finds all BoardData components in children
