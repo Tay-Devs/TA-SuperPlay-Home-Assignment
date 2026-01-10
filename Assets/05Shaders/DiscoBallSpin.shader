@@ -10,7 +10,7 @@ Shader "UI/DiscoBall_Sphere_Spin_Stroke_URP"
 
         _SpinSpeed ("Spin Speed", Float) = 0.2
 
-        _SphereStrength ("Sphere Distortion", Range(0,1)) = 1
+        _SphereStrength ("Sphere Distortion", Range(0,2)) = 1
         _EdgeSoftness ("Edge Softness", Range(0,0.05)) = 0.01
 
         _StrokeColor ("Stroke Color", Color) = (1,1,1,1)

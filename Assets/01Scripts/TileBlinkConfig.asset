@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541b8e476c4057442ab3f7687a7fff05, type: 3}
+  m_Name: TileBlinkConfig
+  m_EditorClassIdentifier: 
+  totalDuration: 2.7
+  startInterval: 0.1
+  endInterval: 0.5
+  finalRevealDelay: 0.3
+  fadeInDuration: 0.2
+  fadeOutDuration: 0.15
+  holdDuration: 0.05
+  fadeInEase: 6
+  fadeOutEase: 5
+  easingPower: 1.99
