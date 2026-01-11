@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using DG.Tweening;
 using UnityEngine.Events;
+using VInspector;
 using Random = UnityEngine.Random;
 
 public class BoardData : MonoBehaviour
@@ -18,11 +19,10 @@ public class BoardData : MonoBehaviour
     [Header("Upgrade")]
     [SerializeField] private PlayableDirector upgradeTimeline;
     
-    [Header("Entrance Effect - Reveal")]
+    [Foldout("Entrance Effect - Celebration Blink")]
     [Tooltip("Delay between each tile reveal")]
     [SerializeField] private float delayBetweenReveals = 0.1f;
     
-    [Header("Entrance Effect - Celebration Blink")]
     [Tooltip("How long the celebration blinking lasts after all tiles revealed")]
     [SerializeField] private float celebrationBlinkDuration = 2f;
 
@@ -38,14 +38,16 @@ public class BoardData : MonoBehaviour
     [Tooltip("Maximum tiles to blink at once")]
     [SerializeField] private int maxSimultaneousBlinks = 2;
 
-    [Header("Celebration Blink Settings")]
     [SerializeField] private float celebrationFadeInDuration = 0.03f;
+    
     [SerializeField] private float celebrationHoldDuration = 0.05f;
+    
     [SerializeField] private float celebrationFadeOutDuration = 0.08f;
     private Ease celebrationFadeInEase = Ease.OutQuad;
     private Ease celebrationFadeOutEase = Ease.InQuad;
-     
-     [SerializeField] private UnityEvent onCelebrationFinished;
+    [EndFoldout]
+   
+    [SerializeField] private UnityEvent onCelebrationFinished;
     
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
@@ -304,18 +306,12 @@ public class BoardData : MonoBehaviour
         }
         return null;
     }
-    
     // Auto-populates tiles list from children with BoardTileView component
-    // Useful for quick setup - call from context menu
-    [ContextMenu("Auto Find Tiles In Children")]
+    [Button("Auto Find Tiles In Children")]
     private void AutoFindTiles()
     {
         tiles.Clear();
         tiles.AddRange(GetComponentsInChildren<BoardTileView>(true));
-        
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardData] Found {tiles.Count} tiles in children");
-        }
     }
+    
 }
