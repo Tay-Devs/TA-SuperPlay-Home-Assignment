@@ -44,8 +44,8 @@ SpriteAtlas:
     secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
-    - {fileID: 2800000, guid: 419d03717157f284aa3354574a61a901, type: 3}
-    - {fileID: 2800000, guid: 0fdb322f4b11d854086624589b9b8256, type: 3}
+    - {fileID: 2800000, guid: 539d2f4c1ce5ef643bba052565d553ae, type: 3}
+    - {fileID: 2800000, guid: cff409cbf28d3414b81528a8bd984aec, type: 3}
     - {fileID: 2800000, guid: 21847ef21bb8bf5459782accea304584, type: 3}
     - {fileID: 2800000, guid: 08cf60fb01b3c1945b5bf196bc14eaf7, type: 3}
     - {fileID: 2800000, guid: 6d6c9527dfe7afc4db2feb2703653647, type: 3}
@@ -73,12 +73,7 @@ SpriteAtlas:
     - {fileID: 2800000, guid: 6fe04305af953234a99a07d91c1734e2, type: 3}
     - {fileID: 2800000, guid: 3252fe1f93986d6438c1cb1b36fae719, type: 3}
     - {fileID: 2800000, guid: 5b6f56f0001b9334297e1fdb4507c7c5, type: 3}
-    - {fileID: 2800000, guid: cff409cbf28d3414b81528a8bd984aec, type: 3}
-    - {fileID: 2800000, guid: 539d2f4c1ce5ef643bba052565d553ae, type: 3}
-    - {fileID: 2800000, guid: 3814034ab2f5c5b40a6644f07451b6a5, type: 3}
-    - {fileID: 2800000, guid: cb9b0ef585b54b546a0bd90afbaf93c8, type: 3}
-    - {fileID: 2800000, guid: d2d6952e7dddb3342a2bdc7a3c2987d7, type: 3}
-    - {fileID: 2800000, guid: b694671d318d91444b115bdcd337690e, type: 3}
+    - {fileID: 2800000, guid: b208b676f236ea74bae152ce2bb92062, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -89,7 +84,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 61361fd069d518b40988d0b982e59843, type: 3}
   - {fileID: 21300000, guid: 5b6f56f0001b9334297e1fdb4507c7c5, type: 3}
   - {fileID: 21300000, guid: fbd45c01853e9814eb3ac5ef75e3a447, type: 3}
-  - {fileID: 21300000, guid: 419d03717157f284aa3354574a61a901, type: 3}
   - {fileID: 21300000, guid: 27a81881d0c14c345b5b183e930eb97b, type: 3}
   - {fileID: 21300000, guid: f0c14ff16e78e8b43836e56ae4afef30, type: 3}
   - {fileID: 21300000, guid: 21847ef21bb8bf5459782accea304584, type: 3}
@@ -98,13 +92,12 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 63c53fc4b67188442b516885c48707f3, type: 3}
   - {fileID: 21300000, guid: 5df816f414c17784892e754eb0aa9bea, type: 3}
   - {fileID: 21300000, guid: 6fe04305af953234a99a07d91c1734e2, type: 3}
-  - {fileID: 21300000, guid: cb9b0ef585b54b546a0bd90afbaf93c8, type: 3}
   - {fileID: 21300000, guid: 11cbce361c34a064da2f6f1f59fb64f5, type: 3}
+  - {fileID: 21300000, guid: b208b676f236ea74bae152ce2bb92062, type: 3}
   - {fileID: 21300000, guid: 7f5a618662b7e024d90cda46a08d51f7, type: 3}
   - {fileID: 21300000, guid: 6d6c9527dfe7afc4db2feb2703653647, type: 3}
   - {fileID: 21300000, guid: 1557ac288f60fe248b0165f6e0134476, type: 3}
   - {fileID: 21300000, guid: 4d650db89c19a284d92bf4373ec3b5a7, type: 3}
-  - {fileID: 21300000, guid: 3814034ab2f5c5b40a6644f07451b6a5, type: 3}
   - {fileID: 21300000, guid: 465bf42bb6a29f443badf6ebda1749c7, type: 3}
   - {fileID: 21300000, guid: 094c916bf87bf4a468f188eec503c19a, type: 3}
   - {fileID: 21300000, guid: c9862a9bc50777e4ba7576fdecf6e425, type: 3}
@@ -113,10 +106,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 88601e2c336830d4da551a660a1bb804, type: 3}
   - {fileID: 21300000, guid: 539d2f4c1ce5ef643bba052565d553ae, type: 3}
   - {fileID: 21300000, guid: 8ec9e9cc06993174dbabe4760b770bfe, type: 3}
-  - {fileID: 21300000, guid: b694671d318d91444b115bdcd337690e, type: 3}
-  - {fileID: 21300000, guid: d2d6952e7dddb3342a2bdc7a3c2987d7, type: 3}
   - {fileID: 21300000, guid: 3252fe1f93986d6438c1cb1b36fae719, type: 3}
-  - {fileID: 21300000, guid: 0fdb322f4b11d854086624589b9b8256, type: 3}
   - {fileID: 21300000, guid: fc53747fd96486f468cbb16efc240a25, type: 3}
   - {fileID: 21300000, guid: 656e17ef6d6080e44907491ac4a842a5, type: 3}
   m_PackedSpriteNamesToIndex:
@@ -125,7 +115,6 @@ SpriteAtlas:
   - Puzzle
   - Disco_Ball_Blue
   - Tile_Pink_Corner_Top
-  - Close_Button
   - Tile_Pink_Mid
   - Tile_Green_Corner_Top
   - Back
@@ -134,13 +123,12 @@ SpriteAtlas:
   - Tile_Pink_Corner_Bot
   - Tile_Blue_Mid
   - Tile_Purple_Corner_Top
-  - Progress_Bar_2
   - Tile_Gold_Corner_Top
+  - Disco_Ball_Glow
   - Honey
   - Coins
   - Trident
   - Tile_Gold_Corner_Bot
-  - Progress_Bar_1
   - Checkmark
   - FreeTicket
   - Heart
@@ -149,10 +137,7 @@ SpriteAtlas:
   - Tile_Blue_Corner_Bot
   - Disco_Ball_Yellow
   - Tile_Blue_Corner_Top
-  - Player_Currency
-  - Progress_Bar_3
   - Tile_Purple_Mid
-  - Info_Button
   - WildCard
   - Tile_Purple_Corner_Bot
   m_RenderDataMap: {}
