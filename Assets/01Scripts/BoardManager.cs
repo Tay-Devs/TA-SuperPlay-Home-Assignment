@@ -5,147 +5,140 @@ using UnityEngine;
 using UnityEngine.Playables;
 using VInspector;
 
+// Responsible for board progression, reward sequences, and board upgrade
+// Acts as the main coordinator between BoardModel, TileBlinkController, and BoardEntranceController
 public class BoardManager : MonoBehaviour
 {
     [Header("Configuration")]
-    [SerializeField] private List<BoardData> boards = new List<BoardData>();
+    [SerializeField] private List<BoardModel> boards = new List<BoardModel>();
     [SerializeField] private TileBlinkController blinkController;
+    [SerializeField] private BoardEntranceController entranceController;
     
     [Header("Animation")]
+    [SerializeField] private AnimationClip winAnimationClip;
+    [SerializeField] private float additionalWinDelay = 0.2f;
     
-    [SerializeField] private AnimationClip animationDelay;
     [Header("State")]
     [SerializeField] private int currentBoardIndex = 0;
     
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
     
-    // Events
+    // Events for external systems to subscribe
     public event Action<int> OnBoardChanged;
     public event Action<BoardTileView> OnRewardWon;
     public event Action OnUpgradeStarted;
     public event Action OnUpgradeCompleted;
     public event Action OnAllBoardsCompleted;
     
+    // Public accessors
     public int CurrentBoardIndex => currentBoardIndex;
-    public BoardData CurrentBoard => GetBoardAt(currentBoardIndex);
+    public BoardModel CurrentBoard => GetBoardAt(currentBoardIndex);
     public bool IsLastBoard => currentBoardIndex >= boards.Count - 1;
     public bool IsSequenceRunning => blinkController != null && blinkController.IsRunning;
-
+    
     private void OnEnable()
     {
-        if (blinkController != null)
-        {
-            blinkController.OnTileSelected += HandleTileSelected;
-            blinkController.OnBlinkSequenceCompleted += HandleSequenceCompleted;
-        }
+        SubscribeToEvents();
     }
     
     private void OnDisable()
     {
-        if (blinkController != null)
-        {
-            blinkController.OnTileSelected -= HandleTileSelected;
-            blinkController.OnBlinkSequenceCompleted -= HandleSequenceCompleted;
-        }
+        UnsubscribeFromEvents();
+    }
+    
+    // Subscribes to blink controller events
+    private void SubscribeToEvents()
+    {
+        if (blinkController == null) return;
+        
+        blinkController.OnTileSelected += HandleTileSelected;
+        blinkController.OnBlinkSequenceCompleted += HandleSequenceCompleted;
+    }
+    
+    // Unsubscribes from events to prevent memory leaks
+    private void UnsubscribeFromEvents()
+    {
+        if (blinkController == null) return;
+        
+        blinkController.OnTileSelected -= HandleTileSelected;
+        blinkController.OnBlinkSequenceCompleted -= HandleSequenceCompleted;
     }
     
     // Starts the reward blink sequence on the current board
-    // Uses rigged winner index from current BoardData
+    
     public void StartRewardSequence()
     {
-        BoardData board = CurrentBoard;
+        BoardModel board = CurrentBoard;
         
+        if (!ValidateBoard(board)) return;
+        
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardManager] Starting reward sequence on board {currentBoardIndex}");
+        }
+        
+        blinkController.StartBlinkSequence(board.Tiles, board.RiggedWinnerIndex);
+    }
+    
+    // Validates board exists and has valid configuration
+    private bool ValidateBoard(BoardModel board)
+    {
         if (board == null)
         {
-            if (enableDebugLogs)
-            {
-                Debug.Log("[BoardManager] No current board available");
-            }
-            return;
+            Debug.LogError("[BoardManager] No current board available");
+            
+            return false;
         }
         
         if (!board.IsValid())
         {
-            if (enableDebugLogs)
-            {
-                Debug.Log($"[BoardManager] Board {currentBoardIndex} has invalid configuration");
-            }
-            return;
+            Debug.LogError($"[BoardManager] Board {currentBoardIndex} has invalid configuration");
+          
+            return false;
         }
         
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardManager] Starting reward sequence on board {currentBoardIndex}, rigged index: {board.RiggedWinnerIndex}");
-        }
-
-
-        blinkController.StartBlinkSequence(board.Tiles, board.RiggedWinnerIndex);
+        return true;
     }
     
-    // Called when blink sequence lands on the winning tile
-    // Triggers Win animation and fires event
+    // Handles winning tile selection from blink controller
     private void HandleTileSelected(BoardTileView winningTile)
     {
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardManager] Tile selected: {winningTile.name}");
-        }
-        
+        // Triggers win animation and fires event for external listeners
         winningTile.TriggerWin();
         OnRewardWon?.Invoke(winningTile);
     }
     
-    // Called when entire blink sequence completes
-    // Automatically triggers upgrade to next level
+    // Called when blink sequence completes
     private void HandleSequenceCompleted()
     {
         if (enableDebugLogs)
         {
             Debug.Log("[BoardManager] Sequence completed, initiating upgrade");
         }
-
-        //Adding delay to start the timeline animation according to the winning animation
-        StartCoroutine(DelayedNextLevel(animationDelay.length));
+        
+        // Adds delay according to the length of the winning tile animation clip + Additional Win Delay Var
+        float delay = (winAnimationClip != null ? winAnimationClip.length : 0f) + additionalWinDelay;
+        
+        StartCoroutine(DelayedUpgrade(delay));
     }
-
-    private IEnumerator DelayedNextLevel(float delay)
+    
+    // Purely for delay to not start the timeline before the animation of winning tile ends
+    private IEnumerator DelayedUpgrade(float delay)
     {
-        yield return new WaitForSeconds(delay + 0.2f);
-        UpgradeToNextLevel();
+        yield return new WaitForSeconds(delay);
+        UpgradeToNextBoard();
     }
-    // Upgrades to the next board level by playing the upgrade timeline
-    // Does nothing if already on last board or no upgrade timeline
-    public void UpgradeToNextLevel()
+    
+    // Upgrades to next board by playing upgrade timeline
+    public void UpgradeToNextBoard()
     {
-        BoardData currentBoard = CurrentBoard;
+        BoardModel currentBoard = CurrentBoard;
         
-        if (currentBoard == null)
+        if (currentBoard == null || !currentBoard.HasUpgrade || IsLastBoard)
         {
-            if (enableDebugLogs)
-            {
-                Debug.Log("[BoardManager] No current board to upgrade from");
-            }
-            return;
-        }
-        
-        if (!currentBoard.HasUpgrade)
-        {
-            if (enableDebugLogs)
-            {
-                Debug.Log("[BoardManager] Current board has no upgrade timeline (last board)");
-            }
-            
-            OnAllBoardsCompleted?.Invoke();
-            return;
-        }
-        
-        if (IsLastBoard)
-        {
-            if (enableDebugLogs)
-            {
-                Debug.Log("[BoardManager] Already on last board");
-            }
+           
+            Debug.LogWarning("[BoardManager] No Board upgrade available or last board reached");
             
             OnAllBoardsCompleted?.Invoke();
             return;
@@ -153,34 +146,33 @@ public class BoardManager : MonoBehaviour
         
         OnUpgradeStarted?.Invoke();
         
+        // Play the timeline of the current board
         PlayableDirector timeline = currentBoard.UpgradeTimeline;
-        timeline.stopped += OnTimelineStopped;
+        timeline.stopped += HandleTimelineStopped;
         timeline.Play();
-        
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardManager] Playing upgrade timeline for board {currentBoardIndex}");
-        }
     }
     
-    // Called when upgrade timeline finishes playing
-    // Increments board index and fires completion event
-    private void OnTimelineStopped(PlayableDirector director)
+    // Handles upgrade timeline completion
+    private void HandleTimelineStopped(PlayableDirector director)
     {
-        director.stopped -= OnTimelineStopped;
+        director.stopped -= HandleTimelineStopped;
         
-        if (enableDebugLogs)
+        // Increments board index
+        currentBoardIndex++;
+    
+        // Only trigger entrance if board supports it
+        if (entranceController != null && CurrentBoard != null && CurrentBoard.HasEntranceEffect)
         {
-            Debug.Log($"[BoardManager] Upgraded to board {currentBoardIndex}");
+            entranceController.SetTargetBoard(CurrentBoard);
         }
-        
+    
+        // Notifies listeners
         OnBoardChanged?.Invoke(currentBoardIndex);
         OnUpgradeCompleted?.Invoke();
     }
     
-    // Gets board data at specified index with bounds checking
-    // Returns null if index is out of range
-    private BoardData GetBoardAt(int index)
+    // Gets board at specified index with bounds checking
+    private BoardModel GetBoardAt(int index)
     {
         if (index >= 0 && index < boards.Count)
         {
@@ -190,29 +182,16 @@ public class BoardManager : MonoBehaviour
     }
     
     // Resets board progression to first board
-    // Useful for testing or new game
+    // This is just in case I make this loop
     public void ResetToFirstBoard()
     {
         currentBoardIndex = 0;
-        OnBoardChanged?.Invoke(currentBoardIndex);
         
-        if (enableDebugLogs)
+        if (entranceController != null && CurrentBoard != null)
         {
-            Debug.Log("[BoardManager] Reset to first board");
-        }
-    }
-    
-    // Forces a specific board index for save/load or debugging
-    // Open for future extensibility
-    public void IncreaseBoardIndex()
-    {
-        currentBoardIndex++;
-        OnBoardChanged?.Invoke(currentBoardIndex);
-            
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardManager] Board index set to {currentBoardIndex}");
+            entranceController.SetTargetBoard(CurrentBoard);
         }
         
+        OnBoardChanged?.Invoke(currentBoardIndex);
     }
 }

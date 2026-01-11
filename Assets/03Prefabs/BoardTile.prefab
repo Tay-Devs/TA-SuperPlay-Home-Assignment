@@ -10367,14 +10367,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackOverlay: {fileID: 5261123436033099316}
   animator: {fileID: 7834633983297223217}
-  revealAnimation: {fileID: 0}
+  revealAnimation: {fileID: 99164042714667978}
   winTriggerName: Win
-  OnRevealStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  OnRevealCompleted:
-    m_PersistentCalls:
-      m_Calls: []
   OnBlinkStarted:
     m_PersistentCalls:
       m_Calls: []

@@ -15,7 +15,7 @@ MonoBehaviour:
   totalDuration: 2.5
   startInterval: 0.1
   endInterval: 0.4
-  finalRevealDelay: 0
+  finalRevealDelay: 0.5
   fadeInDuration: 0.2
   fadeOutDuration: 0.15
   holdDuration: 0.05
