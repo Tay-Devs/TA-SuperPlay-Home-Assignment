@@ -15,8 +15,6 @@ public class BoardTileView : MonoBehaviour
     [SerializeField] private string winTriggerName = "Win";
     
     [Header("Events")]
-    public UnityEvent OnRevealStarted;
-    public UnityEvent OnRevealCompleted;
     public UnityEvent OnBlinkStarted;
     public UnityEvent OnBlinkCompleted;
     public UnityEvent OnWinTriggered;
@@ -59,18 +57,14 @@ public class BoardTileView : MonoBehaviour
             {
                 Debug.Log($"[BoardTileView] {gameObject.name} has no reveal animation assigned");
             }
-        
-            OnRevealStarted?.Invoke();
-            OnRevealCompleted?.Invoke();
+            
             return;
         }
     
         // Ensure animation is ready and play from start
         revealAnimation.DORewind();
         revealAnimation.DOPlay();
-    
-        OnRevealStarted?.Invoke();
-    
+        
         if (enableDebugLogs)
         {
             Debug.Log($"[BoardTileView] {gameObject.name} reveal triggered");

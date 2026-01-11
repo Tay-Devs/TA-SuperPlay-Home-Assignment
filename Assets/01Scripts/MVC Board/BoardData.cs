@@ -27,16 +27,16 @@ public class BoardData : MonoBehaviour
     [SerializeField] private float celebrationBlinkDuration = 2f;
 
     [Tooltip("Minimum interval between blink bursts")]
-    [SerializeField] private float celebrationMinInterval = 0.05f;
+    [SerializeField] private float celebrationMinInterval = 0.1f;
 
     [Tooltip("Maximum interval between blink bursts")]
-    [SerializeField] private float celebrationMaxInterval = 0.15f;
+    [SerializeField] private float celebrationMaxInterval = 0.2f;
 
     [Tooltip("Minimum tiles to blink at once")]
-    [SerializeField] private int minSimultaneousBlinks = 2;
+    [SerializeField] private int minSimultaneousBlinks = 1;
 
     [Tooltip("Maximum tiles to blink at once")]
-    [SerializeField] private int maxSimultaneousBlinks = 4;
+    [SerializeField] private int maxSimultaneousBlinks = 2;
 
     [Header("Celebration Blink Settings")]
     [SerializeField] private float celebrationFadeInDuration = 0.03f;
@@ -270,22 +270,6 @@ public class BoardData : MonoBehaviour
         
         return order;
     }
-    
-    // Gets random tile index avoiding the last picked one
-    // Prevents same tile blinking twice in a row
-    private int GetRandomIndex(int excludeIndex)
-    {
-        if (tiles.Count <= 1) return 0;
-        
-        int randomIndex;
-        do
-        {
-            randomIndex = Random.Range(0, tiles.Count);
-        } while (randomIndex == excludeIndex);
-        
-        return randomIndex;
-    }
-    
     // Resets all tiles' black overlay to original state
     // Called after celebration ends
     private void ResetAllTiles()

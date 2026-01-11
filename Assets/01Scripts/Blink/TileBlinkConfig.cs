@@ -14,7 +14,7 @@ public class TileBlinkConfig : ScriptableObject
     [Range(0.3f, 1f)] public float endInterval = 0.5f;
     
     [Tooltip("Delay before revealing the final selected tile")]
-    [Range(0.1f, 2f)] public float finalRevealDelay = 0.75f;
+    [Range(0f, 2f)] public float finalRevealDelay = 0.75f;
     
     [Header("Blink Fade")]
     [Tooltip("Duration of fade in (overlay to transparent)")]
