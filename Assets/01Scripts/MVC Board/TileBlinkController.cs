@@ -9,6 +9,7 @@ public class TileBlinkController : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private TileBlinkConfig config;
+    [SerializeField] private TileBlinkSFXManager sfxManager;
     
     public event Action OnBlinkSequenceStarted;
     public event Action<BoardTileView> OnTileSelected;
@@ -54,6 +55,12 @@ public class TileBlinkController : MonoBehaviour
             return;
         }
         
+        // Reset SFX pitch at the start of each new sequence
+        if (sfxManager != null)
+        {
+            sfxManager.ResetPitch();
+        }
+        
         currentTiles = new List<BoardTileView>(tiles);
         blinkCoroutine = StartCoroutine(BlinkSequenceRoutine(targetTileIndex));
     }
@@ -70,6 +77,12 @@ public class TileBlinkController : MonoBehaviour
         
         ResetAllTiles();
         isRunning = false;
+        
+        // Reset pitch when sequence is stopped early
+        if (sfxManager != null)
+        {
+            sfxManager.ResetPitch();
+        }
     }
     
     // Main sequence coroutine - fires blinks at interval rate without waiting
@@ -104,11 +117,6 @@ public class TileBlinkController : MonoBehaviour
             
             FireBlink(randomIndex);
             
-            if (enableDebugLogs)
-            {
-                Debug.Log($"[TileBlinkController] Progress: {progress:F2}, Interval: {currentInterval:F3}s, Tile: {randomIndex}");
-            }
-            
             yield return new WaitForSeconds(currentInterval);
             elapsedTime += currentInterval;
         }
@@ -117,15 +125,15 @@ public class TileBlinkController : MonoBehaviour
         
         ResetAllTiles();
         
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[TileBlinkController] Waiting {config.finalRevealDelay}s before final reveal");
-        }
-        
         yield return new WaitForSeconds(config.finalRevealDelay);
         
-        // Final reveal
+        // Final reveal - play selection SFX
         currentTiles[targetTileIndex].SetHighlighted(config.fadeInDuration, config.fadeInEase);
+        
+        if (sfxManager != null)
+        {
+            sfxManager.PlaySelectionSFX();
+        }
         
         isRunning = false;
         OnTileSelected?.Invoke(currentTiles[targetTileIndex]);
@@ -162,7 +170,7 @@ public class TileBlinkController : MonoBehaviour
     }
     
     // Triggers a blink on the specified tile using config settings
-    // Fire-and-forget - tile manages its own animation sequence
+    // Also plays blink SFX with escalating pitch via the SFX manager
     private void FireBlink(int index)
     {
         if (index >= 0 && index < currentTiles.Count)
@@ -174,6 +182,12 @@ public class TileBlinkController : MonoBehaviour
                 config.fadeInEase,
                 config.fadeOutEase
             );
+            
+            // Play blink SFX with escalating pitch
+            if (sfxManager != null)
+            {
+                sfxManager.PlayBlinkSFX();
+            }
         }
     }
     

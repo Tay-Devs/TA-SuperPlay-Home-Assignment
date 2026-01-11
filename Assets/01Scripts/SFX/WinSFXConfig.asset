@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e14fbc37809ce6c47950f163e7facdaa, type: 3}
+  m_Name: WinSFXConfig
+  m_EditorClassIdentifier: 
+  soundLayers:
+  - layerName: Win
+    clip: {fileID: 8300000, guid: 2ee9abbdc994f0246a90db6f8c9a509d, type: 3}
+    volume: 1
+  startingPitch: 1
+  maxPitch: 1
+  pitchIncrement: 0

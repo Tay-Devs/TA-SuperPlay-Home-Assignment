@@ -252,8 +252,8 @@ public class BoardData : MonoBehaviour
     
         return result;
     }
+
     // Creates a list of indices 0 to count-1 in random order
-    // Uses Fisher-Yates shuffle for unbiased randomization
     private List<int> CreateRandomOrder(int count)
     {
         List<int> order = new List<int>(count);
@@ -263,7 +263,7 @@ public class BoardData : MonoBehaviour
             order.Add(i);
         }
         
-        // Fisher-Yates shuffle
+        //Shuffling in random order
         for (int i = count - 1; i > 0; i--)
         {
             int randomIndex = Random.Range(0, i + 1);
@@ -296,16 +296,6 @@ public class BoardData : MonoBehaviour
         return valid;
     }
     
-    // Gets the winning tile directly for convenience
-    // Returns null if index is out of bounds
-    public BoardTileView GetWinningTile()
-    {
-        if (riggedWinnerIndex >= 0 && riggedWinnerIndex < tiles.Count)
-        {
-            return tiles[riggedWinnerIndex];
-        }
-        return null;
-    }
     // Auto-populates tiles list from children with BoardTileView component
     [Button("Auto Find Tiles In Children")]
     private void AutoFindTiles()

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
+using VInspector;
 
 public class BoardManager : MonoBehaviour
 {
@@ -213,19 +214,5 @@ public class BoardManager : MonoBehaviour
             Debug.Log($"[BoardManager] Board index set to {currentBoardIndex}");
         }
         
-    }
-    
-    // Auto-finds all BoardData components in children
-    // Useful for quick setup - call from context menu
-    [ContextMenu("Auto Find Boards In Children")]
-    private void AutoFindBoards()
-    {
-        boards.Clear();
-        boards.AddRange(GetComponentsInChildren<BoardData>(true));
-        
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[BoardManager] Found {boards.Count} boards in children");
-        }
     }
 }
