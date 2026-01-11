@@ -135,7 +135,7 @@ public class BoardManager : MonoBehaviour
     {
         BoardModel currentBoard = CurrentBoard;
         
-        if (currentBoard == null || !currentBoard.HasUpgrade || IsLastBoard)
+        if (currentBoard == null || !currentBoard.HasUpgrade)
         {
            
             Debug.LogWarning("[BoardManager] No Board upgrade available or last board reached");
