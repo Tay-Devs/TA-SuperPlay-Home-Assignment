@@ -23,7 +23,7 @@ public class BoardData : MonoBehaviour
     [Tooltip("Delay between each tile reveal")]
     [SerializeField] private float delayBetweenReveals = 0.1f;
     
-    [Tooltip("How long the celebration blinking lasts after all tiles revealed")]
+    [Tooltip("Fallback duration if no celebration clip assigned")]
     [SerializeField] private float celebrationBlinkDuration = 2f;
 
     [Tooltip("Minimum interval between blink bursts")]
@@ -46,6 +46,11 @@ public class BoardData : MonoBehaviour
     private Ease celebrationFadeInEase = Ease.OutQuad;
     private Ease celebrationFadeOutEase = Ease.InQuad;
     [EndFoldout]
+    
+    [Foldout("Celebration Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private BlinkSFXConfig celebrationSFXConfig;
+    [EndFoldout]
    
     [SerializeField] private UnityEvent onCelebrationFinished;
     
@@ -60,6 +65,7 @@ public class BoardData : MonoBehaviour
     
     private Coroutine entranceCoroutine;
     private bool isEntranceRunning;
+    private float entranceElapsedTime;
     
     public IReadOnlyList<BoardTileView> Tiles => tiles;
     public int RiggedWinnerIndex => riggedWinnerIndex;
@@ -100,19 +106,24 @@ public class BoardData : MonoBehaviour
         ResetAllTiles();
     }
     
-    // Main entrance coroutine: reveal tiles in random order, then celebrate
-    // Shuffles tile order, reveals with delay, then runs celebration blinks
+    // Main entrance coroutine: plays music, reveals tiles, then celebrates
+    // Music starts here and celebration ends when music finishes
     private IEnumerator EntranceEffectRoutine()
     {
         isEntranceRunning = true;
+        entranceElapsedTime = 0f;
     
         yield return null;
     
         OnEntranceStarted?.Invoke();
-    
+        
+        // Play celebration music at the start of entrance
+        PlayCelebrationSFX();
+        
         if (enableDebugLogs)
         {
-            Debug.Log($"[BoardData] {gameObject.name} entrance effect started with {tiles.Count} tiles");
+            float musicDuration = GetMusicDuration();
+            Debug.Log($"[BoardData] {gameObject.name} entrance started, music duration: {musicDuration:F2}s");
         }
     
         List<int> revealOrder = CreateRandomOrder(tiles.Count);
@@ -146,15 +157,17 @@ public class BoardData : MonoBehaviour
             }
         
             yield return new WaitForSeconds(delayBetweenReveals);
+            entranceElapsedTime += delayBetweenReveals;
         }
     
         yield return new WaitForSeconds(longestRevealDuration);
+        entranceElapsedTime += longestRevealDuration;
     
         OnAllTilesRevealed?.Invoke();
     
         if (enableDebugLogs)
         {
-            Debug.Log($"[BoardData] All {tiles.Count} tiles revealed, starting celebration");
+            Debug.Log($"[BoardData] All {tiles.Count} tiles revealed in {entranceElapsedTime:F2}s, starting celebration");
         }
     
         yield return StartCoroutine(CelebrationBlinkRoutine());
@@ -169,16 +182,24 @@ public class BoardData : MonoBehaviour
         }
     }
     
-    // Celebration blink coroutine: randomly blinks tiles for set duration
-    // Picks random tiles at random intervals, allows overlapping blinks
+    // Celebration blink coroutine: blinks tiles until music ends
+    // Duration is remaining music time after entrance phase
     private IEnumerator CelebrationBlinkRoutine()
     {
         OnCelebrationStarted?.Invoke();
+        
+        // Calculate remaining time from music duration minus entrance time
+        float remainingDuration = GetRemainingCelebrationDuration();
+        
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] Celebration started, remaining duration: {remainingDuration:F2}s");
+        }
     
         float elapsedTime = 0f;
         HashSet<int> lastBlinkedIndices = new HashSet<int>();
     
-        while (elapsedTime < celebrationBlinkDuration)
+        while (elapsedTime < remainingDuration)
         {
             int blinkCount = Random.Range(minSimultaneousBlinks, maxSimultaneousBlinks + 1);
             blinkCount = Mathf.Min(blinkCount, tiles.Count);
@@ -213,11 +234,75 @@ public class BoardData : MonoBehaviour
     
         ResetAllTiles();
         onCelebrationFinished?.Invoke();
+        
         if (enableDebugLogs)
         {
             Debug.Log($"[BoardData] Celebration blink completed");
         }
     }
+    
+    // Returns the total music duration from the longest clip in config
+    // Falls back to entrance time + celebrationBlinkDuration if no clip
+    private float GetMusicDuration()
+    {
+        if (celebrationSFXConfig == null || celebrationSFXConfig.SoundLayers == null)
+        {
+            return 0f;
+        }
+        
+        float maxClipDuration = 0f;
+        
+        foreach (var layer in celebrationSFXConfig.SoundLayers)
+        {
+            if (layer.Clip != null && layer.Clip.length > maxClipDuration)
+            {
+                maxClipDuration = layer.Clip.length;
+            }
+        }
+        
+        return maxClipDuration;
+    }
+    
+    // Calculates remaining celebration time based on music duration minus entrance elapsed time
+    // Falls back to celebrationBlinkDuration if no clip or if music already ended
+    private float GetRemainingCelebrationDuration()
+    {
+        float musicDuration = GetMusicDuration();
+        
+        if (musicDuration <= 0f)
+        {
+            return celebrationBlinkDuration;
+        }
+        
+        float remaining = musicDuration - entranceElapsedTime;
+        
+        // Ensure at least a small celebration even if entrance took longer than music
+        return Mathf.Max(remaining, 0.5f);
+    }
+    
+    // Plays all sound layers from celebration config once
+    // Called at start of entrance so music spans both phases
+    private void PlayCelebrationSFX()
+    {
+        if (audioSource == null || celebrationSFXConfig == null || celebrationSFXConfig.SoundLayers == null)
+        {
+            return;
+        }
+        
+        foreach (var layer in celebrationSFXConfig.SoundLayers)
+        {
+            if (layer.Clip != null)
+            {
+                audioSource.PlayOneShot(layer.Clip, layer.Volume);
+            }
+        }
+        
+        if (enableDebugLogs)
+        {
+            Debug.Log($"[BoardData] Playing celebration music with {celebrationSFXConfig.SoundLayers.Length} layers");
+        }
+    }
+    
     private List<int> GetRandomIndices(int count, HashSet<int> excludeIndices)
     {
         List<int> result = new List<int>(count);
@@ -263,7 +348,7 @@ public class BoardData : MonoBehaviour
             order.Add(i);
         }
         
-        //Shuffling in random order
+        // Shuffling in random order
         for (int i = count - 1; i > 0; i--)
         {
             int randomIndex = Random.Range(0, i + 1);
@@ -272,6 +357,7 @@ public class BoardData : MonoBehaviour
         
         return order;
     }
+    
     // Resets all tiles' black overlay to original state
     // Called after celebration ends
     private void ResetAllTiles()
@@ -303,5 +389,4 @@ public class BoardData : MonoBehaviour
         tiles.Clear();
         tiles.AddRange(GetComponentsInChildren<BoardTileView>(true));
     }
-    
 }
